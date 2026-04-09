@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Rooms{% endblock %}
+{% block page_title %}Room Management{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h2><i class="bi bi-door-open me-2"></i>All Rooms</h2>
+    {% if user.is_hostel_admin or user.is_warden %}
+    <a href="{% url 'rooms:room_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Add Room
+    </a>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+    <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
+        <select name="floor" class="form-select form-select-sm" style="max-width:160px;">
+            <option value="">All Floors</option>
+            {% for f in floors %}
+            <option value="{{ f }}" {% if selected_floor == f|stringformat:"d" %}selected{% endif %}>Floor {{ f }}</option>
+            {% endfor %}
+        </select>
+        <select name="room_type" class="form-select form-select-sm" style="max-width:160px;">
+            <option value="">All Types</option>
+            <option value="single" {% if selected_type == 'single' %}selected{% endif %}>Single</option>
+            <option value="double" {% if selected_type == 'double' %}selected{% endif %}>Double</option>
+            <option value="triple" {% if selected_type == 'triple' %}selected{% endif %}>Triple</option>
+            <option value="dormitory" {% if selected_type == 'dormitory' %}selected{% endif %}>Dormitory</option>
+        </select>
+        <select name="availability" class="form-select form-select-sm" style="max-width:160px;">
+            <option value="">All Status</option>
+            <option value="available" {% if selected_availability == 'available' %}selected{% endif %}>Available</option>
+            <option value="full" {% if selected_availability == 'full' %}selected{% endif %}>Full</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-funnel me-1"></i>Filter</button>
+        <a href="{% url 'rooms:room_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+    </form>
+</div>
+
+<!-- Legend -->
+<div class="d-flex gap-3 mb-3 small text-muted">
+    <span><span class="bed-dot available d-inline-block" style="width:10px;height:10px;"></span> Available</span>
+    <span><span class="bed-dot occupied d-inline-block" style="width:10px;height:10px;"></span> Occupied</span>
+    <span><span class="bed-dot maintenance d-inline-block" style="width:10px;height:10px;"></span> Maintenance</span>
+</div>
+
+<!-- Room Grid -->
+{% if rooms %}
+<div class="room-grid">
+    {% for room in rooms %}
+    <a href="{% url 'rooms:room_detail' room.pk %}" class="room-card {% if room.is_full %}full{% elif room.available_beds == room.total_beds %}available{% else %}partial{% endif %}" style="color: inherit;">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <div class="room-number">Room {{ room.room_number }}</div>
+                <small class="text-muted">Floor {{ room.floor }}</small>
+            </div>
+            <span class="badge-status {% if room.is_full %}badge-occupied{% else %}badge-available{% endif %}">
+                {{ room.available_beds }}/{{ room.total_beds }} free
+            </span>
+        </div>
+
+        <div class="room-meta">
+            <span><i class="bi bi-grid me-1"></i>{{ room.get_room_type_display }}</span>
+            {% if room.is_ac %}<span><i class="bi bi-snow me-1"></i>AC</span>{% endif %}
+            <span><i class="bi bi-currency-rupee"></i>{{ room.monthly_rent }}/mo</span>
+        </div>
+
+        <div class="bed-dots">
+            {% for bed in room.beds.all %}
+            <div class="bed-dot {{ bed.status }}" title="Bed {{ bed.bed_label }} - {{ bed.get_status_display }}"></div>
+            {% endfor %}
+        </div>
+
+        <div class="occupancy-bar">
+            <div class="occupancy-fill {% if room.occupancy_percentage > 80 %}high{% elif room.occupancy_percentage > 40 %}mid{% else %}low{% endif %}"
+                 style="width: {{ room.occupancy_percentage }}%"></div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-door-closed d-block"></i>
+    <h3>No rooms found</h3>
+    <p>{% if user.is_hostel_admin %}Add your first room to get started.{% else %}No rooms match your filters.{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Receipt - {{ payment.receipt_number }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 40px; border: 2px solid #e2e8f0; }
+        .header { text-align: center; border-bottom: 2px solid #6366f1; padding-bottom: 20px; margin-bottom: 20px; }
+        .header h1 { color: #6366f1; margin: 0; font-size: 24px; }
+        .header p { color: #64748b; margin: 4px 0; }
+        .receipt-title { background: #f1f5f9; padding: 10px; text-align: center; font-weight: bold; margin: 20px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        td { padding: 8px 4px; border-bottom: 1px solid #e2e8f0; }
+        td:first-child { color: #64748b; width: 40%; }
+        td:last-child { font-weight: bold; text-align: right; }
+        .amount-row { font-size: 20px; color: #6366f1; }
+        .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 16px; }
+        .stamp { color: #10b981; font-size: 18px; font-weight: bold; border: 2px solid #10b981; display: inline-block; padding: 4px 16px; transform: rotate(-5deg); margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏠 HostelHub</h1>
+        <p>Hostel Room Allocation & Management System</p>
+        <p>Payment Receipt</p>
+    </div>
+
+    <div class="receipt-title">RECEIPT #{{ payment.receipt_number }}</div>
+
+    <table>
+        <tr>
+            <td>Student Name</td>
+            <td>{{ student.get_full_name }}</td>
+        </tr>
+        <tr>
+            <td>Username</td>
+            <td>{{ student.username }}</td>
+        </tr>
+        <tr>
+            <td>Email</td>
+            <td>{{ student.email }}</td>
+        </tr>
+        {% if allocation %}
+        <tr>
+            <td>Room</td>
+            <td>Room {{ allocation.bed.room.room_number }} (Bed {{ allocation.bed.bed_label }})</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td>Fee Month</td>
+            <td>{{ payment.fee_month }}</td>
+        </tr>
+        <tr>
+            <td>Payment Date</td>
+            <td>{{ payment.payment_date|date:"d M Y, h:i A" }}</td>
+        </tr>
+        <tr>
+            <td>Transaction ID</td>
+            <td>{{ payment.transaction_id }}</td>
+        </tr>
+        <tr>
+            <td>Payment Method</td>
+            <td>{{ payment.payment_method }}</td>
+        </tr>
+        <tr class="amount-row">
+            <td>Amount Paid</td>
+            <td>₹{{ payment.amount }}</td>
+        </tr>
+    </table>
+
+    <div style="text-align: center;">
+        <div class="stamp">✓ PAID</div>
+    </div>
+
+    <div class="footer">
+        <p>This is a computer-generated receipt and does not require a signature.</p>
+        <p>HostelHub Management System • Generated on {% now "d M Y" %}</p>
+    </div>
+</body>
+</html>

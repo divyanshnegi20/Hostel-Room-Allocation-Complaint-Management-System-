@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Make Payment{% endblock %}
+{% block page_title %}Make Payment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="payment-card animate-slide-up">
+            <div class="text-center mb-4">
+                <div class="stat-icon mx-auto mb-3" style="width:64px;height:64px;font-size:2rem;background:var(--primary-glow);color:var(--primary);">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <h4 class="fw-bold">Payment Gateway</h4>
+                <p class="text-muted small">Mock Payment Simulation</p>
+            </div>
+
+            <div class="payment-amount">₹{{ amount }}</div>
+            <div class="payment-info">
+                Room {{ room.room_number }} • {{ room.get_room_type_display }} • {% if room.is_ac %}AC{% else %}Non-AC{% endif %}
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label">Select Month</label>
+                    <select name="fee_month" class="form-select">
+                        {% for month in months %}
+                        <option value="{{ month }}">{{ month }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Mock payment UI -->
+                <div class="p-3 rounded mb-4" style="background:#f8fafc; border: 1px solid var(--border-color);">
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Card Number (Mock)</label>
+                        <input type="text" class="form-control" value="4111 1111 1111 1111" disabled>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Expiry</label>
+                            <input type="text" class="form-control" value="12/28" disabled>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">CVV</label>
+                            <input type="text" class="form-control" value="***" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2">
+                    <i class="bi bi-lock me-2"></i>Pay ₹{{ amount }} Securely
+                </button>
+                <p class="text-center mt-2 small text-muted">
+                    <i class="bi bi-info-circle"></i> This is a simulated payment (90% success rate)
+                </p>
+            </form>
+
+            <a href="{% url 'fees:fee_dashboard' %}" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

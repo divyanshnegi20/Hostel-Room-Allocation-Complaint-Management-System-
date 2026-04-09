@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block auth_content %}
+<div class="auth-wrapper">
+    <div class="auth-card" style="max-width: 560px;">
+        <div class="brand">
+            <i class="bi bi-building"></i>
+            <span class="brand-text">HostelHub</span>
+        </div>
+        <h2 class="auth-title">Create Account</h2>
+        <p class="auth-subtitle">Register as a new student</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row">
+                {% for field in form %}
+                <div class="{% if field.name == 'address' %}col-12{% elif field.name in 'username,email,institution' %}col-12{% else %}col-md-6{% endif %} mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <small class="text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 mt-2">
+                <i class="bi bi-person-plus me-2"></i>Create Account
+            </button>
+        </form>
+
+        <p class="text-center mt-3 mb-0">
+            <small class="text-muted">Already have an account?
+                <a href="{% url 'accounts:login' %}">Sign in</a>
+            </small>
+        </p>
+    </div>
+</div>
+{% endblock %}

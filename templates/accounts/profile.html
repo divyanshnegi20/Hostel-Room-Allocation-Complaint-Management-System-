@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card animate-slide-up">
+            <div class="card-header d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background: var(--primary-glow); color: var(--primary); width: 42px; height: 42px; font-size: 1.2rem;">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div>
+                    <h5 class="mb-0">{{ user.get_full_name|default:user.username }}</h5>
+                    <small class="text-muted">{{ user.get_role_display }} • Joined {{ user.date_joined|date:"M d, Y" }}</small>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        {% for field in form %}
+                        <div class="{% if field.name == 'address' %}col-12{% else %}col-md-6{% endif %} mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-end mt-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

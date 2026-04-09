@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Complaints{% endblock %}
+{% block page_title %}Complaints{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h2><i class="bi bi-chat-left-text me-2"></i>{% if user.is_hostel_admin or user.is_warden %}All Complaints{% else %}My Complaints{% endif %}</h2>
+    <a href="{% url 'complaints:complaint_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>New Complaint
+    </a>
+</div>
+
+<div class="filter-bar">
+    <form method="GET" class="d-flex flex-wrap gap-2">
+        <select name="status" class="form-select form-select-sm" style="max-width:160px;">
+            <option value="">All Status</option>
+            <option value="open" {% if selected_status == 'open' %}selected{% endif %}>Open</option>
+            <option value="in_progress" {% if selected_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+            <option value="resolved" {% if selected_status == 'resolved' %}selected{% endif %}>Resolved</option>
+            <option value="closed" {% if selected_status == 'closed' %}selected{% endif %}>Closed</option>
+        </select>
+        <select name="category" class="form-select form-select-sm" style="max-width:160px;">
+            <option value="">All Categories</option>
+            <option value="plumbing" {% if selected_category == 'plumbing' %}selected{% endif %}>Plumbing</option>
+            <option value="electrical" {% if selected_category == 'electrical' %}selected{% endif %}>Electrical</option>
+            <option value="cleaning" {% if selected_category == 'cleaning' %}selected{% endif %}>Cleaning</option>
+            <option value="furniture" {% if selected_category == 'furniture' %}selected{% endif %}>Furniture</option>
+            <option value="internet" {% if selected_category == 'internet' %}selected{% endif %}>Internet</option>
+            <option value="security" {% if selected_category == 'security' %}selected{% endif %}>Security</option>
+            <option value="other" {% if selected_category == 'other' %}selected{% endif %}>Other</option>
+        </select>
+        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-funnel me-1"></i>Filter</button>
+        <a href="{% url 'complaints:complaint_list' %}" class="btn btn-sm btn-outline-secondary">Clear</a>
+    </form>
+</div>
+
+{% if complaints %}
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    {% if user.is_hostel_admin or user.is_warden %}<th>Student</th>{% endif %}
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for complaint in complaints %}
+                <tr>
+                    <td><strong>{{ complaint.pk }}</strong></td>
+                    {% if user.is_hostel_admin or user.is_warden %}<td>{{ complaint.student.get_full_name }}</td>{% endif %}
+                    <td><a href="{% url 'complaints:complaint_detail' complaint.pk %}">{{ complaint.subject|truncatechars:40 }}</a></td>
+                    <td><span class="badge bg-light text-dark">{{ complaint.get_category_display }}</span></td>
+                    <td><span class="badge-status badge-{{ complaint.priority }}">{{ complaint.get_priority_display }}</span></td>
+                    <td><span class="badge-status badge-{{ complaint.status }}">{{ complaint.get_status_display }}</span></td>
+                    <td>{{ complaint.created_at|date:"d M Y" }}</td>
+                    <td>
+                        <a href="{% url 'complaints:complaint_detail' complaint.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        {% if user.is_hostel_admin or user.is_warden %}
+                        <a href="{% url 'complaints:complaint_update' complaint.pk %}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-chat-square d-block"></i>
+    <h3>No Complaints</h3>
+    <p>{% if user.is_hostel_admin %}No complaints have been submitted yet.{% else %}You haven't submitted any complaints.{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}

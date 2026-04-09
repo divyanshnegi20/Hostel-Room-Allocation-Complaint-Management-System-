@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}My Room{% endblock %}
+{% block page_title %}My Room{% endblock %}
+
+{% block content %}
+{% if allocation %}
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card animate-slide-up">
+            <div class="card-header">
+                <i class="bi bi-house-door me-2"></i>Current Allocation
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="stat-icon mx-auto mb-3" style="width:64px;height:64px;font-size:1.8rem;background:var(--primary-glow);color:var(--primary);">
+                        <i class="bi bi-door-open"></i>
+                    </div>
+                    <h3 class="fw-bold">Room {{ allocation.bed.room.room_number }}</h3>
+                    <p class="text-muted">Bed {{ allocation.bed.bed_label }}</p>
+                </div>
+                <ul class="list-unstyled">
+                    <li class="mb-2 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Floor</span>
+                        <strong>{{ allocation.bed.room.floor }}</strong>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Room Type</span>
+                        <strong>{{ allocation.bed.room.get_room_type_display }}</strong>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">AC</span>
+                        <strong>{% if allocation.bed.room.is_ac %}Yes{% else %}No{% endif %}</strong>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Monthly Rent</span>
+                        <strong>₹{{ allocation.bed.room.monthly_rent }}</strong>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span class="text-muted">Allocated Since</span>
+                        <strong>{{ allocation.start_date|date:"d M Y" }}</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card animate-slide-up">
+            <div class="card-header">
+                <i class="bi bi-people me-2"></i>Roommates
+            </div>
+            <div class="card-body">
+                {% for bed in allocation.bed.room.beds.all %}
+                    {% if bed.status == 'occupied' %}
+                    {% for alloc in bed.allocations.all %}
+                        {% if alloc.is_active and alloc.student != user %}
+                        <div class="d-flex align-items-center gap-3 mb-3 p-2 rounded" style="background:#f8fafc;">
+                            <div class="stat-icon" style="width:40px;height:40px;font-size:1rem;background:rgba(14,165,233,0.12);color:var(--secondary);">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <div>
+                                <div class="fw-600">{{ alloc.student.get_full_name }}</div>
+                                <small class="text-muted">Bed {{ bed.bed_label }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if past_allocations %}
+<div class="card mt-4">
+    <div class="card-header"><i class="bi bi-clock-history me-2"></i>Past Allocations</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Room</th><th>Bed</th><th>From</th><th>To</th></tr></thead>
+                <tbody>
+                    {% for a in past_allocations %}
+                    <tr>
+                        <td>{{ a.bed.room.room_number }}</td>
+                        <td>{{ a.bed.bed_label }}</td>
+                        <td>{{ a.start_date|date:"d M Y" }}</td>
+                        <td>{{ a.end_date|date:"d M Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-house d-block"></i>
+    <h3>No Room Allocated</h3>
+    <p>You have not been allocated a room yet. Please contact the hostel administration.</p>
+    <a href="{% url 'rooms:room_list' %}" class="btn btn-outline-primary mt-2">View Available Rooms</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Complaint #{{ complaint.pk }}{% endblock %}
+{% block page_title %}Complaint #{{ complaint.pk }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'complaints:complaint_list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+    {% if user.is_hostel_admin or user.is_warden %}
+    <a href="{% url 'complaints:complaint_update' complaint.pk %}" class="btn btn-sm btn-outline-warning ms-1">
+        <i class="bi bi-pencil me-1"></i>Update Status
+    </a>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card animate-slide-up">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-chat-left-text me-2"></i>{{ complaint.subject }}</span>
+                <span class="badge-status badge-{{ complaint.status }}">{{ complaint.get_status_display }}</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="text-muted small text-uppercase">Description</h6>
+                    <p>{{ complaint.description|linebreaks }}</p>
+                </div>
+
+                {% if complaint.resolution_notes %}
+                <div class="p-3 rounded" style="background:#f0fdf4; border: 1px solid #bbf7d0;">
+                    <h6 class="text-success small text-uppercase mb-2">
+                        <i class="bi bi-check-circle me-1"></i>Resolution Notes
+                    </h6>
+                    <p class="mb-0">{{ complaint.resolution_notes|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card animate-slide-up">
+            <div class="card-header"><i class="bi bi-info-circle me-2"></i>Details</div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Student</span>
+                        <strong>{{ complaint.student.get_full_name }}</strong>
+                    </li>
+                    <li class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Category</span>
+                        <span class="badge bg-light text-dark">{{ complaint.get_category_display }}</span>
+                    </li>
+                    <li class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Priority</span>
+                        <span class="badge-status badge-{{ complaint.priority }}">{{ complaint.get_priority_display }}</span>
+                    </li>
+                    <li class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Status</span>
+                        <span class="badge-status badge-{{ complaint.status }}">{{ complaint.get_status_display }}</span>
+                    </li>
+                    <li class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Created</span>
+                        <strong>{{ complaint.created_at|date:"d M Y, h:i A" }}</strong>
+                    </li>
+                    {% if complaint.resolved_at %}
+                    <li class="mb-3 d-flex justify-content-between border-bottom pb-2">
+                        <span class="text-muted">Resolved</span>
+                        <strong>{{ complaint.resolved_at|date:"d M Y, h:i A" }}</strong>
+                    </li>
+                    {% endif %}
+                    {% if complaint.assigned_to %}
+                    <li class="d-flex justify-content-between">
+                        <span class="text-muted">Assigned To</span>
+                        <strong>{{ complaint.assigned_to.get_full_name }}</strong>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

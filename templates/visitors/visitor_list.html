@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Visitors{% endblock %}
+{% block page_title %}Visitor Log{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h2><i class="bi bi-people me-2"></i>Visitor Log</h2>
+    <a href="{% url 'visitors:visitor_create' %}" class="btn btn-primary">
+        <i class="bi bi-person-plus me-1"></i>Log Visitor
+    </a>
+</div>
+
+<div class="filter-bar">
+    <form method="GET" class="d-flex gap-2">
+        <input type="text" name="search" class="form-control form-control-sm" style="max-width:250px;"
+               placeholder="Search visitor name or phone..." value="{{ search_query }}">
+        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-search me-1"></i>Search</button>
+    </form>
+</div>
+
+{% if visitors %}
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Visitor</th>
+                    <th>Phone</th>
+                    <th>Visiting</th>
+                    <th>Relation</th>
+                    <th>Purpose</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in visitors %}
+                <tr>
+                    <td><strong>{{ v.visitor_name }}</strong></td>
+                    <td>{{ v.visitor_phone }}</td>
+                    <td>{{ v.student.get_full_name }}</td>
+                    <td><span class="badge bg-light text-dark">{{ v.get_relation_display }}</span></td>
+                    <td>{{ v.purpose|truncatechars:30 }}</td>
+                    <td>{{ v.check_in|date:"d M Y, h:i A" }}</td>
+                    <td>
+                        {% if v.check_out %}
+                        {{ v.check_out|date:"d M Y, h:i A" }}
+                        {% else %}
+                        <span class="badge-status badge-open">Active</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not v.is_checked_out %}
+                        <a href="{% url 'visitors:visitor_checkout' v.pk %}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-box-arrow-right"></i> Checkout
+                        </a>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-people d-block"></i>
+    <h3>No Visitor Records</h3>
+    <p>Log a visitor entry to get started.</p>
+</div>
+{% endif %}
+{% endblock %}

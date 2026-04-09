@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card primary">
+            <div class="stat-icon"><i class="bi bi-people"></i></div>
+            <div class="stat-value">{{ total_students }}</div>
+            <div class="stat-label">Total Students</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card success">
+            <div class="stat-icon"><i class="bi bi-door-open"></i></div>
+            <div class="stat-value">{{ total_rooms }}</div>
+            <div class="stat-label">Total Rooms</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card warning">
+            <div class="stat-icon"><i class="bi bi-bar-chart-fill"></i></div>
+            <div class="stat-value">{{ occupancy_pct }}%</div>
+            <div class="stat-label">Occupancy Rate</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card info">
+            <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+            <div class="stat-value">₹{{ total_collected }}</div>
+            <div class="stat-label">Total Collected</div>
+        </div>
+    </div>
+</div>
+
+<!-- Second Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card success">
+            <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value">{{ available_beds }}</div>
+            <div class="stat-label">Available Beds</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card danger">
+            <div class="stat-icon"><i class="bi bi-x-circle"></i></div>
+            <div class="stat-value">{{ occupied_beds }}</div>
+            <div class="stat-label">Occupied Beds</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card warning">
+            <div class="stat-icon"><i class="bi bi-chat-dots"></i></div>
+            <div class="stat-value">{{ open_complaints }}</div>
+            <div class="stat-label">Open Complaints</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card secondary">
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-value">{{ pending_payments }}</div>
+            <div class="stat-label">Pending Payments</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="chart-container">
+            <h6 class="fw-bold mb-3"><i class="bi bi-pie-chart me-2"></i>Complaints by Category</h6>
+            <canvas id="complaintChart"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="chart-container">
+            <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart me-2"></i>Complaint Status Overview</h6>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i>Recent Allocations
+            </div>
+            <div class="card-body p-0">
+                {% if recent_allocations %}
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr><th>Student</th><th>Room</th><th>Bed</th><th>Date</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for a in recent_allocations %}
+                            <tr>
+                                <td>{{ a.student.get_full_name }}</td>
+                                <td>{{ a.bed.room.room_number }}</td>
+                                <td>{{ a.bed.bed_label }}</td>
+                                <td>{{ a.start_date|date:"d M" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-inbox d-block" style="font-size:2rem;"></i>
+                    <p>No allocations yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-chat-left-text me-2"></i>Recent Complaints
+            </div>
+            <div class="card-body p-0">
+                {% if recent_complaints %}
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr><th>Student</th><th>Subject</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for c in recent_complaints %}
+                            <tr>
+                                <td>{{ c.student.get_full_name }}</td>
+                                <td><a href="{% url 'complaints:complaint_detail' c.pk %}">{{ c.subject|truncatechars:30 }}</a></td>
+                                <td><span class="badge-status badge-{{ c.status }}">{{ c.get_status_display }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state py-4">
+                    <i class="bi bi-inbox d-block" style="font-size:2rem;"></i>
+                    <p>No complaints yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Complaint by Category - Pie Chart
+const catLabels = [{% for c in complaint_categories %}'{{ c.category }}',{% endfor %}];
+const catData = [{% for c in complaint_categories %}{{ c.count }},{% endfor %}];
+
+if (catLabels.length > 0) {
+    new Chart(document.getElementById('complaintChart'), {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catData,
+                backgroundColor: ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#64748b'],
+                borderWidth: 0,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } }
+            }
+        }
+    });
+} else {
+    document.getElementById('complaintChart').parentElement.innerHTML += '<p class="text-muted text-center">No data available</p>';
+}
+
+// Complaint Status - Bar Chart
+new Chart(document.getElementById('statusChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Open', 'In Progress', 'Resolved', 'Closed'],
+        datasets: [{
+            label: 'Complaints',
+            data: [{{ open_complaints }}, {{ in_progress_complaints }}, {{ resolved_complaints }}, {{ total_complaints|add:"-"|add:open_complaints|default:0 }}],
+            backgroundColor: ['#10b981', '#f59e0b', '#6366f1', '#64748b'],
+            borderRadius: 8,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+</script>
+{% endblock %}

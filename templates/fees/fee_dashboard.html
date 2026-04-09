@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Fees{% endblock %}
+{% block page_title %}Fee Management{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    {% if allocation %}
+    <div class="col-md-4">
+        <div class="stat-card primary">
+            <div class="stat-icon"><i class="bi bi-house-door"></i></div>
+            <div class="stat-value" style="font-size:1.4rem;">Room {{ allocation.bed.room.room_number }}</div>
+            <div class="stat-label">{{ allocation.bed.room.get_room_type_display }} • {% if allocation.bed.room.is_ac %}AC{% else %}Non-AC{% endif %}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card success">
+            <div class="stat-icon"><i class="bi bi-currency-rupee"></i></div>
+            <div class="stat-value">₹{{ fee_structure.amount|default:allocation.bed.room.monthly_rent }}</div>
+            <div class="stat-label">Monthly Fee</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card info">
+            <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+            <div class="stat-value">₹{{ total_paid }}</div>
+            <div class="stat-label">Total Paid</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="section-header">
+    <h2><i class="bi bi-receipt me-2"></i>Payment History</h2>
+    {% if allocation %}
+    <a href="{% url 'fees:make_payment' %}" class="btn btn-primary">
+        <i class="bi bi-credit-card me-1"></i>Pay Now
+    </a>
+    {% endif %}
+</div>
+
+{% if payments %}
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Receipt #</th>
+                    <th>Amount</th>
+                    <th>Month</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Transaction ID</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td><strong>{{ payment.receipt_number }}</strong></td>
+                    <td>₹{{ payment.amount }}</td>
+                    <td>{{ payment.fee_month }}</td>
+                    <td><span class="badge-status badge-{{ payment.status }}">{{ payment.get_status_display }}</span></td>
+                    <td>{{ payment.payment_date|date:"d M Y, h:i A" }}</td>
+                    <td><small class="text-muted">{{ payment.transaction_id }}</small></td>
+                    <td>
+                        {% if payment.status == 'paid' %}
+                        <a href="{% url 'fees:payment_receipt' payment.pk %}" class="btn btn-sm btn-outline-primary" title="Download Receipt">
+                            <i class="bi bi-download"></i>
+                        </a>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-wallet d-block"></i>
+    <h3>No Payments Yet</h3>
+    <p>{% if allocation %}Click "Pay Now" to make your first payment.{% else %}You need a room allocation before making payments.{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}

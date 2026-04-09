@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Complaint{% endblock %}
+{% block page_title %}Update Complaint #{{ complaint.pk }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card animate-slide-up">
+            <div class="card-header">
+                <i class="bi bi-pencil me-2"></i>Update: {{ complaint.subject }}
+            </div>
+            <div class="card-body">
+                <div class="alert alert-light">
+                    <strong>Student:</strong> {{ complaint.student.get_full_name }} |
+                    <strong>Category:</strong> {{ complaint.get_category_display }} |
+                    <strong>Created:</strong> {{ complaint.created_at|date:"d M Y" }}
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Update
+                        </button>
+                        <a href="{% url 'complaints:complaint_detail' complaint.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
